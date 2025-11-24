@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraduationCap, Shield } from "lucide-react";
-import AnimatedBackground from "@/components/AnimatedBackground";
 import OTPInput from "@/components/OTPInput";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
@@ -72,7 +71,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <AnimatedBackground />
+      {/* AnimatedBackground removed */}
       
       <Card className="w-full max-w-md relative z-10">
         <CardHeader className="space-y-4">

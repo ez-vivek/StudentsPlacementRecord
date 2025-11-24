@@ -3,23 +3,43 @@ import nodemailer from "nodemailer";
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASSWORD || process.env.SMTP_PASS;
 
+const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+const smtpPort = parseInt(process.env.SMTP_PORT || "587");
+
+// Use secure connection automatically for port 465 (SMTPS). For 587 we use
+// STARTTLS (secure: false) which is common for submission ports.
+const secure = smtpPort === 465;
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
+  host: smtpHost,
+  port: smtpPort,
+  secure,
   auth: {
     user: smtpUser,
     pass: smtpPass,
+  },
+  // Improve reliability when the remote server uses TLS and avoid long hangs
+  // during verification in flaky networks.
+  connectionTimeout: 10_000,
+  greetingTimeout: 10_000,
+  socketTimeout: 10_000,
+  tls: {
+    // Allow self-signed / internal certificates in development only if the
+    // environment explicitly opts in by setting `SMTP_ALLOW_INSECURE_TLS=true`.
+    rejectUnauthorized: process.env.SMTP_ALLOW_INSECURE_TLS !== "true",
   },
 });
 
 if (!smtpUser || !smtpPass) {
   console.warn("SMTP credentials not configured. Email sending will likely fail in development.");
-} else {
+  } else {
   transporter.verify().then(() => {
     console.log("SMTP transporter verified");
   }).catch((err) => {
     console.warn("SMTP transporter verification failed:", err && err.message ? err.message : err);
+    // Log full error for debugging when available
+    if (err && (err as any).stack) console.debug((err as any).stack);
+    console.warn("Common causes: wrong host/port, blocked network/firewall, or TLS settings. For development use a test account (Ethereal) or set SMTP_ALLOW_INSECURE_TLS=true to allow self-signed certs.");
   });
 }
 
