@@ -10,7 +10,7 @@ import OTPInput from "@/components/OTPInput";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 
 export default function Login() {
   const [role, setRole] = useState<"student" | "admin">("student");
@@ -19,7 +19,6 @@ export default function Login() {
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
 
   const sendOTPMutation = useMutation({
     mutationFn: () => api.sendOTP(email, name, role),
@@ -41,14 +40,13 @@ export default function Login() {
 
   const verifyOTPMutation = useMutation({
     mutationFn: () => api.verifyOTP(email, otp, name, role),
-    onSuccess: (data) => {
-      if (data.user) {
-        toast({
-          title: "Success",
-          description: "Login successful!",
-        });
-        setLocation(data.user.role === "admin" ? "/admin" : "/student");
-      }
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Login successful!",
+      });
+      // Invalidate the auth query to refetch user data from AuthContext
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },
     onError: () => {
       toast({
