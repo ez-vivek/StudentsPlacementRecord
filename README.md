@@ -109,3 +109,17 @@ This is a full-stack web application designed to manage student placement record
 - `start`: Starts the production server.
 - `check`: Runs TypeScript type checking.
 - `db:push`: Pushes database schema changes to the database.
+
+## Deploying to Vercel (static frontend)
+
+ - **Recommended**: Deploy only the frontend (client) to Vercel as a static site. This repo builds the client into `dist/public` when you run `npm run build` from the project root.
+ - I added a `vercel.json` so Vercel will run the build and serve `dist/public` as the site root.
+ - Steps to deploy the frontend on Vercel:
+    1. In the Vercel dashboard, import the repository.
+    2. Set the **Build Command** to `npm run vercel-build` (or leave default as `npm run build`).
+    3. Set the **Output Directory** (if prompted) to `dist/public`.
+    4. Deploy.
+
+Notes on the backend:
+ - The backend is an Express server that expects to run as a long-lived process. Vercel's serverless functions are not a drop-in replacement for a full Express server that listens on a port.
+ - To host the backend consider using a platform that supports long-running Node processes (Render, Fly, Railway, Heroku, or a Docker-based host). Alternatively, refactor the API into serverless functions compatible with Vercel.
